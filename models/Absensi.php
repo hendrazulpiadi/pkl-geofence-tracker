@@ -86,6 +86,17 @@ class Absensi {
         return $stmt->execute([$id]);
     }
 
+    public function getById($id) {
+        $stmt = $this->conn->prepare("SELECT a.*, s.nama_lengkap, s.nisn, s.kelas, pt.nama_pt,
+                                             pt.latitude, pt.longitude, s.perusahaan_id
+                                      FROM absensi a
+                                      JOIN siswa s ON a.siswa_id = s.id
+                                      LEFT JOIN perusahaan_pt pt ON s.perusahaan_id = pt.id
+                                      WHERE a.id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch();
+    }
+
     public function getRekap($perusahaanId = null, $bulan = null, $tahun = null) {
         $where = "";
         $params = [];

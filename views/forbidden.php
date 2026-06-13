@@ -11,7 +11,7 @@ header("HTTP/1.0 403 Forbidden");
     <h1 class="text-danger"><i class="bi bi-shield-exclamation"></i> 403</h1>
     <h3>Akses Ditolak</h3>
     <p>Anda tidak memiliki izin untuk mengakses halaman ini.</p>
-    <a href="index.php?page=login" class="btn btn-primary">Kembali ke Login</a>
+    <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/index.php?page=login" class="btn btn-primary">Kembali ke Login</a>
 </div>
 </body>
 </html>

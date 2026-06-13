@@ -3,6 +3,7 @@ require_once __DIR__ . '/../models/Absensi.php';
 require_once __DIR__ . '/../models/Siswa.php';
 require_once __DIR__ . '/../models/Perizinan.php';
 require_once __DIR__ . '/../models/PengaturanWaktu.php';
+require_once __DIR__ . '/../models/Pembimbing.php';
 
 class SiswaController {
     private $absensiModel;
@@ -90,11 +91,70 @@ class SiswaController {
                 $this->absensiModel->absenPulang($_SESSION['siswa_id'], $lat, $lng, $fotoName);
             }
 
-            header('Location: index.php?page=siswa-dashboard&success=1');
+            header('Location: index.php?page=siswa-absen&success=1');
             exit;
         }
 
         include __DIR__ . '/../views/siswa/absen.php';
+    }
+
+    public function riwayat() {
+        $siswa = $this->siswaModel->getById($_SESSION['siswa_id']);
+
+        $filter = $_GET['filter'] ?? 'bulan';
+        $tanggalCari = $_GET['tanggal'] ?? '';
+
+        switch ($filter) {
+            case 'hari':
+                $mulai = date('Y-m-d');
+                $akhir = date('Y-m-d');
+                break;
+            case 'minggu':
+                $mulai = date('Y-m-d', strtotime('monday this week'));
+                $akhir = date('Y-m-d', strtotime('sunday this week'));
+                break;
+            case 'bulan':
+            default:
+                $mulai = date('Y-m-01');
+                $akhir = date('Y-m-t');
+                break;
+        }
+
+        if ($tanggalCari) {
+            $mulai = $tanggalCari;
+            $akhir = $tanggalCari;
+        }
+
+        $riwayat = $this->absensiModel->getRiwayat($_SESSION['siswa_id'], 90);
+        $filteredRiwayat = array_filter($riwayat, function($r) use ($mulai, $akhir) {
+            return $r['tanggal'] >= $mulai && $r['tanggal'] <= $akhir;
+        });
+
+        $totalHadir = 0;
+        $totalIzin = 0;
+        $totalAlpa = 0;
+        $totalHari = count($filteredRiwayat);
+
+        foreach ($filteredRiwayat as $r) {
+            if ($r['status_datang'] == 'approved') $totalHadir++;
+            elseif ($r['status_datang'] == 'rejected') $totalAlpa++;
+        }
+
+        $izinList = $this->perizinanModel->getBySiswaId($_SESSION['siswa_id']);
+        foreach ($izinList as $izin) {
+            if ($izin['status_approval'] == 'approved') {
+                $tglMulai = new DateTime($izin['tgl_mulai']);
+                $tglSelesai = new DateTime($izin['tgl_selesai']);
+                $diff = $tglMulai->diff($tglSelesai)->days + 1;
+                if ($tglMulai >= new DateTime($mulai) && $tglSelesai <= new DateTime($akhir)) {
+                    $totalIzin += $diff;
+                }
+            }
+        }
+
+        $persentase = $totalHari > 0 ? round(($totalHadir / $totalHari) * 100) : 0;
+
+        include __DIR__ . '/../views/siswa/riwayat.php';
     }
 
     public function izin() {
@@ -121,5 +181,45 @@ class SiswaController {
 
         $riwayatIzin = $this->perizinanModel->getBySiswaId($_SESSION['siswa_id']);
         include __DIR__ . '/../views/siswa/izin.php';
+    }
+
+    public function profil() {
+        $siswa = $this->siswaModel->getById($_SESSION['siswa_id']);
+
+        $pembimbingSekolah = null;
+        $pembimbingPt = null;
+        if ($siswa['pembimbing_sekolah_id']) {
+            $pm = new PembimbingModel();
+            $pembimbingSekolah = $pm->getById($siswa['pembimbing_sekolah_id']);
+        }
+        if ($siswa['pembimbing_pt_id']) {
+            $pm = new PembimbingModel();
+            $pembimbingPt = $pm->getById($siswa['pembimbing_pt_id']);
+        }
+
+        $riwayat = $this->absensiModel->getRiwayat($_SESSION['siswa_id'], 365);
+        $totalHadir = 0;
+        $totalAlpa = 0;
+        foreach ($riwayat as $r) {
+            if ($r['status_datang'] == 'approved') $totalHadir++;
+            elseif ($r['status_datang'] == 'rejected') $totalAlpa++;
+        }
+        $totalIzin = count($this->perizinanModel->getBySiswaId($_SESSION['siswa_id']));
+        $totalAll = count($riwayat);
+        $persentase = $totalAll > 0 ? round(($totalHadir / $totalAll) * 100) : 0;
+
+        include __DIR__ . '/../views/siswa/profil.php';
+    }
+
+    public function detail() {
+        $id = $_GET['id'] ?? 0;
+        $absensi = $this->absensiModel->getById($id);
+
+        if (!$absensi || $absensi['siswa_id'] != $_SESSION['siswa_id']) {
+            header('Location: index.php?page=siswa-riwayat');
+            exit;
+        }
+
+        include __DIR__ . '/../views/siswa/detail.php';
     }
 }

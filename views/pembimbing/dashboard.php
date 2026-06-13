@@ -22,7 +22,7 @@
                             <p class="mb-0">Pending Absensi</p>
                         </div>
                         <div class="card-footer bg-transparent border-0 text-center">
-                            <a href="index.php?page=pembimbing-approval" class="text-white">Review <i class="bi bi-arrow-right"></i></a>
+                            <a href="<?= BASE_URL ?>/index.php?page=pembimbing-approval" class="text-white">Review <i class="bi bi-arrow-right"></i></a>
                         </div>
                     </div>
                 </div>
@@ -34,7 +34,7 @@
                             <p class="mb-0">Pending Izin</p>
                         </div>
                         <div class="card-footer bg-transparent border-0 text-center">
-                            <a href="index.php?page=pembimbing-approval" class="text-white">Review <i class="bi bi-arrow-right"></i></a>
+                            <a href="<?= BASE_URL ?>/index.php?page=pembimbing-approval" class="text-white">Review <i class="bi bi-arrow-right"></i></a>
                         </div>
                     </div>
                 </div>

@@ -5,6 +5,8 @@ require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/helpers/session.php';
 require_once __DIR__ . '/helpers/haversine.php';
 
+define('BASE_URL', rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\'));
+
 spl_autoload_register(function ($class) {
     $paths = [
         __DIR__ . '/models/' . $class . '.php',
@@ -69,6 +71,21 @@ switch ($page) {
         require_once 'controllers/SiswaController.php';
         $ctrl = new SiswaController();
         $ctrl->izin();
+        break;
+    case 'siswa-riwayat':
+        require_once 'controllers/SiswaController.php';
+        $ctrl = new SiswaController();
+        $ctrl->riwayat();
+        break;
+    case 'siswa-profil':
+        require_once 'controllers/SiswaController.php';
+        $ctrl = new SiswaController();
+        $ctrl->profil();
+        break;
+    case 'siswa-detail':
+        require_once 'controllers/SiswaController.php';
+        $ctrl = new SiswaController();
+        $ctrl->detail();
         break;
     case 'pembimbing-dashboard':
         require_once 'controllers/PembimbingController.php';

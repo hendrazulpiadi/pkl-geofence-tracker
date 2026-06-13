@@ -22,6 +22,33 @@ class PembimbingController {
         );
         $pendingAbsensi = $this->absensiModel->getPending($_SESSION['pembimbing_id'], $_SESSION['jenis_pembimbing']);
         $pendingIzin = $this->perizinanModel->getPending($_SESSION['pembimbing_id'], $_SESSION['jenis_pembimbing']);
+
+        $totalSiswa = count($siswaBimbingan);
+        $totalPending = count($pendingAbsensi) + count($pendingIzin);
+
+        $hadirHariIni = 0;
+        foreach ($siswaBimbingan as $s) {
+            if (!empty($s['absen_id']) && ($s['status_datang'] ?? '') == 'approved') {
+                $hadirHariIni++;
+            }
+        }
+
+        $izinHariIni = 0;
+        foreach ($siswaBimbingan as $s) {
+            if (!empty($s['absen_id']) && ($s['status_datang'] ?? '') == 'izin') {
+                $izinHariIni++;
+            }
+        }
+
+        $totalPerusahaan = 0;
+        $perusahaanIds = [];
+        foreach ($siswaBimbingan as $s) {
+            if (!empty($s['perusahaan_id']) && !in_array($s['perusahaan_id'], $perusahaanIds)) {
+                $perusahaanIds[] = $s['perusahaan_id'];
+            }
+        }
+        $totalPerusahaan = count($perusahaanIds);
+
         include __DIR__ . '/../views/pembimbing/dashboard.php';
     }
 
